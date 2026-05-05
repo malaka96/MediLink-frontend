@@ -13,7 +13,7 @@ export default function Layout() {
       
       {/* SIDEBAR WRAPPER */}
       <div className="p-3 sm:p-4">
-        <div className="w-full sm:w-64 bg-white rounded-2xl shadow-md p-3 space-y-2">
+        <div className="w-full sm:w-64 bg-white border border-gray-200 rounded-2xl shadow-md p-3 space-y-2">
           
           {navItems.map((item) => {
             const Icon = item.icon;

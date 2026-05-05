@@ -1,82 +1,59 @@
-import { useState } from "react";
-import {
-  LayoutDashboard,
-  Boxes,
-  CalendarCheck
-} from "lucide-react";
+import InfoCard from "../components/InfoCard";
+import { DollarSign, Users, Package, CalendarCheck } from "lucide-react";
 
-type Page = "dashboard" | "inventory" | "reservation";
-
-export default function DashboardLayout() {
-  const [activePage, setActivePage] = useState<Page>("dashboard");
-
-  const navItems = [
-    {
-      key: "dashboard" as Page,
-      label: "Dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      key: "inventory" as Page,
-      label: "Inventory Management",
-      icon: Boxes,
-    },
-    {
-      key: "reservation" as Page,
-      label: "Reservation",
-      icon: CalendarCheck,
-    },
-  ];
-
-  const getPageTitle = () => {
-    switch (activePage) {
-      case "dashboard":
-        return "Dashboard";
-      case "inventory":
-        return "Inventory Management";
-      case "reservation":
-        return "Reservation";
-    }
-  };
-
+const Dashboard = () => {
   return (
-    <div className="h-screen flex bg-gray-100">
+    <div className="space-y-6">
       
-      {/* SIDEBAR */}
-      <div className="w-64 bg-white border-r p-3 space-y-2">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activePage === item.key;
-
-          return (
-            <button
-              key={item.key}
-              onClick={() => setActivePage(item.key)}
-              className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition
-                ${
-                  isActive
-                    ? "bg-blue-100 text-blue-600 font-medium"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-sm">{item.label}</span>
-            </button>
-          );
-        })}
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          Dashboard
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Overview of your system performance and activities
+        </p>
       </div>
 
-      {/* CONTENT AREA */}
-      <div className="flex-1 flex flex-col">
+      {/* Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        {/* PAGE CONTENT */}
-        <div className="p-6">
-          <h1 className="text-xl font-semibold text-gray-800">
-            {getPageTitle()}
-          </h1>
-        </div>
+        <InfoCard
+          title="Revenue"
+          value="$12,500"
+          description="Compared to last month"
+          icon={DollarSign}
+          color="text-green-600"
+        />
+
+        <InfoCard
+          title="Users"
+          value="1,240"
+          description="Active this week"
+          icon={Users}
+          color="text-blue-600"
+        />
+
+        <InfoCard
+          title="Inventory Items"
+          value="320"
+          description="Total products available"
+          icon={Package}
+          color="text-purple-600"
+        />
+
+        <InfoCard
+          title="Reservations"
+          value="86"
+          description="This month bookings"
+          icon={CalendarCheck}
+          color="text-orange-600"
+        />
 
       </div>
+
     </div>
   );
-}
+};
+
+export default Dashboard;
