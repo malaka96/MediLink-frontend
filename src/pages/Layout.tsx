@@ -9,10 +9,10 @@ export default function Layout() {
   ];
 
   return (
-    <div className="min-h-screen sm:px-16 bg-gray-100 flex flex-col sm:flex-row">
+    <div className="min-h-screen w-full sm:px-16 bg-gray-100 flex flex-col sm:flex-row overflow-x-hidden">
       
       {/* SIDEBAR WRAPPER */}
-      <div className="p-3 sm:p-4">
+      <div className="p-3 sm:p-4 shrink-0">
         <div className="w-full sm:w-64 bg-white border border-gray-200 rounded-2xl shadow-md p-3 space-y-2">
           
           {navItems.map((item) => {
@@ -40,7 +40,7 @@ export default function Layout() {
       </div>
 
       {/* CONTENT */}
-      <div className="flex-1 p-4 sm:p-6">
+      <div className="flex-1 min-w-0 p-4 sm:p-6">
         <Outlet />
       </div>
 
