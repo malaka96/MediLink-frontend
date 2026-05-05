@@ -1,5 +1,6 @@
 import InfoCard from "../components/InfoCard";
-import { DollarSign, Users, Package, CalendarCheck } from "lucide-react";
+import { DollarSign, Users, Package, CalendarCheck, } from "lucide-react";
+import InfoSection from "../components/InfoSection";
 
 const Dashboard = () => {
   return (
@@ -51,6 +52,8 @@ const Dashboard = () => {
         />
 
       </div>
+
+      <InfoSection></InfoSection>
 
     </div>
   );

@@ -16,7 +16,7 @@ export default function InfoCard({
   color = "text-blue-600",
 }: Props) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 w-full max-w-xs">
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 w-full max-w-xs">
       
       {/* Title */}
       <p className="text-sm text-gray-500 font-medium">
