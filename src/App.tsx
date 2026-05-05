@@ -3,6 +3,7 @@ import Topbar from "./components/TopBar";
 import Layout from "./pages/Layout";
 import Dashboard from "./pages/Dashboard";
 import InventoryManagement from "./pages/InventoryManagement";
+import Reservations from "./pages/Reservations";
 
 export default function App() {
   return (
@@ -13,7 +14,7 @@ export default function App() {
 
           <Route path="dashboard" element={<Dashboard/>} />
           <Route path="inventory" element={<InventoryManagement/>} />
-          <Route path="reservation" element={<h1>Reservation</h1>} />
+          <Route path="reservation" element={<Reservations/>} />
         </Route>
       </Routes>
     </BrowserRouter>
