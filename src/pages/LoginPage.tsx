@@ -1,0 +1,406 @@
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowRight,
+  Building2,
+  Lock,
+  Mail,
+  MapPin,
+  Phone,
+  Shield,
+  Store,
+  User,
+} from "lucide-react";
+
+type LoginRole = "admin" | "pharmacy";
+
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<"login" | "register">("login");
+
+  const [loginRole, setLoginRole] = useState<LoginRole>("admin");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
+  const [pharmacyName, setPharmacyName] = useState("");
+  const [ownerName, setOwnerName] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  const canLogin = useMemo(() => {
+    return loginEmail.trim().length > 0 && loginPassword.trim().length > 0;
+  }, [loginEmail, loginPassword]);
+
+  const canRegister = useMemo(() => {
+    return (
+      pharmacyName.trim().length > 0 &&
+      ownerName.trim().length > 0 &&
+      registerEmail.trim().length > 0 &&
+      phone.trim().length > 0 &&
+      address.trim().length > 0 &&
+      registerPassword.trim().length >= 6 &&
+      confirmPassword.trim().length >= 6
+    );
+  }, [
+    address,
+    confirmPassword,
+    ownerName,
+    pharmacyName,
+    phone,
+    registerEmail,
+    registerPassword,
+  ]);
+
+  const onSubmitLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+
+    if (!canLogin) {
+      setMessage({ type: "error", text: "Please enter email and password." });
+      return;
+    }
+
+    // Hook up to real auth when backend is ready.
+    // eslint-disable-next-line no-console
+    console.log("Login:", { role: loginRole, email: loginEmail });
+    navigate("/dashboard");
+  };
+
+  const onSubmitRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+
+    if (!canRegister) {
+      setMessage({
+        type: "error",
+        text: "Please fill all fields. Password must be at least 6 characters.",
+      });
+      return;
+    }
+
+    if (registerPassword !== confirmPassword) {
+      setMessage({ type: "error", text: "Passwords do not match." });
+      return;
+    }
+
+    // Hook up to real registration when backend is ready.
+    // eslint-disable-next-line no-console
+    console.log("Register pharmacy:", {
+      pharmacyName,
+      ownerName,
+      email: registerEmail,
+      phone,
+      address,
+    });
+
+    setMessage({
+      type: "success",
+      text: "Registration submitted. You can now sign in as Pharmacy.",
+    });
+    setLoginRole("pharmacy");
+    setLoginEmail(registerEmail);
+    setLoginPassword("");
+    setMode("login");
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Brand / Info */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
+              <Store className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-lg font-semibold text-gray-800">MediLink</p>
+              <p className="text-sm text-gray-500">Smart Healthcare Management</p>
+            </div>
+          </div>
+
+          <div className="mt-6 space-y-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+              {mode === "login" ? "Welcome back" : "Register your pharmacy"}
+            </h1>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Admins and pharmacies can securely access the system here. Pharmacies
+              can also request an account by registering their details.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div className="border border-gray-200 rounded-xl p-4">
+                <div className="flex items-center gap-2 text-gray-800 font-medium">
+                  <Shield className="w-4 h-4 text-blue-600" />
+                  Admin Access
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Manage users, reservations, and system settings.
+                </p>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl p-4">
+                <div className="flex items-center gap-2 text-gray-800 font-medium">
+                  <Building2 className="w-4 h-4 text-blue-600" />
+                  Pharmacy Portal
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Handle reservations and manage inventory efficiently.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Form Card */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          {/* Tabs */}
+          <div className="p-4 sm:p-5 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMessage(null);
+                  setMode("login");
+                }}
+                className={
+                  mode === "login"
+                    ? "px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white shadow-sm"
+                    : "px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-white border border-transparent hover:border-gray-200 transition"
+                }
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMessage(null);
+                  setMode("register");
+                }}
+                className={
+                  mode === "register"
+                    ? "px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white shadow-sm"
+                    : "px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-white border border-transparent hover:border-gray-200 transition"
+                }
+              >
+                Pharmacy Register
+              </button>
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            {message ? (
+              <div
+                className={
+                  message.type === "success"
+                    ? "mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
+                    : "mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+                }
+              >
+                {message.text}
+              </div>
+            ) : null}
+
+            {mode === "login" ? (
+              <form onSubmit={onSubmitLogin} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Login As
+                  </label>
+                  <select
+                    value={loginRole}
+                    onChange={(e) => setLoginRole(e.target.value as LoginRole)}
+                    className="mt-2 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="pharmacy">Pharmacy</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Email</label>
+                  <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
+                    <Mail className="w-4 h-4 text-gray-400 shrink-0" />
+                    <input
+                      type="email"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="outline-none w-full text-sm min-w-0"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
+                    <Lock className="w-4 h-4 text-gray-400 shrink-0" />
+                    <input
+                      type="password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="outline-none w-full text-sm min-w-0"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={!canLogin}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  Sign In <ArrowRight className="w-4 h-4" />
+                </button>
+
+                <p className="text-xs text-gray-500 text-center">
+                  Use pharmacy registration if you don&apos;t have an account yet.
+                </p>
+              </form>
+            ) : (
+              <form onSubmit={onSubmitRegister} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">
+                      Pharmacy Name
+                    </label>
+                    <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
+                      <Store className="w-4 h-4 text-gray-400 shrink-0" />
+                      <input
+                        type="text"
+                        value={pharmacyName}
+                        onChange={(e) => setPharmacyName(e.target.value)}
+                        placeholder="CityCare Pharmacy"
+                        className="outline-none w-full text-sm min-w-0"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">
+                      Owner / Manager
+                    </label>
+                    <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
+                      <User className="w-4 h-4 text-gray-400 shrink-0" />
+                      <input
+                        type="text"
+                        value={ownerName}
+                        onChange={(e) => setOwnerName(e.target.value)}
+                        placeholder="Kasun Perera"
+                        className="outline-none w-full text-sm min-w-0"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Email</label>
+                  <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
+                    <Mail className="w-4 h-4 text-gray-400 shrink-0" />
+                    <input
+                      type="email"
+                      value={registerEmail}
+                      onChange={(e) => setRegisterEmail(e.target.value)}
+                      placeholder="admin@yourpharmacy.lk"
+                      className="outline-none w-full text-sm min-w-0"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">
+                      Phone
+                    </label>
+                    <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
+                      <Phone className="w-4 h-4 text-gray-400 shrink-0" />
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+94 77 123 4567"
+                        className="outline-none w-full text-sm min-w-0"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">
+                      Address
+                    </label>
+                    <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
+                      <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+                      <input
+                        type="text"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder="Colombo 07"
+                        className="outline-none w-full text-sm min-w-0"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">
+                      Password
+                    </label>
+                    <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
+                      <Lock className="w-4 h-4 text-gray-400 shrink-0" />
+                      <input
+                        type="password"
+                        value={registerPassword}
+                        onChange={(e) => setRegisterPassword(e.target.value)}
+                        placeholder="Min 6 characters"
+                        className="outline-none w-full text-sm min-w-0"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">
+                      Confirm Password
+                    </label>
+                    <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
+                      <Lock className="w-4 h-4 text-gray-400 shrink-0" />
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Repeat password"
+                        className="outline-none w-full text-sm min-w-0"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={!canRegister}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  Submit Registration <ArrowRight className="w-4 h-4" />
+                </button>
+
+                <p className="text-xs text-gray-500 text-center">
+                  Registration is for pharmacies only. Admin accounts are managed
+                  by the system.
+                </p>
+              </form>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

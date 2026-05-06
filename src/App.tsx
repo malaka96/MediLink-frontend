@@ -1,17 +1,23 @@
-import { BrowserRouter, Routes, Route, } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Topbar from "./components/TopBar";
 import Layout from "./pages/Layout";
 import Dashboard from "./pages/Dashboard";
 import InventoryManagement from "./pages/InventoryManagement";
 import Reservations from "./pages/Reservations";
 import UserManagement from "./pages/UserManagement";
+import LoginPage from "./pages/LoginPage";
 
-export default function App() {
+function AppFrame() {
+  const location = useLocation();
+  const showChrome = location.pathname !== "/login";
+
   return (
-    <BrowserRouter>
-    <Topbar/>
+    <>
+      {showChrome ? <Topbar /> : null}
       <Routes>
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<Layout/>}>
+          <Route index element={<Navigate to="dashboard" replace />} />
 
           <Route path="dashboard" element={<Dashboard/>} />
           <Route path="inventory" element={<InventoryManagement/>} />
@@ -19,6 +25,14 @@ export default function App() {
           <Route path="user-management" element={<UserManagement/>} />
         </Route>
       </Routes>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppFrame />
     </BrowserRouter>
   );
 }
