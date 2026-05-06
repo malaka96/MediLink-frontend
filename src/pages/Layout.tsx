@@ -1,11 +1,12 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, Boxes, CalendarCheck } from "lucide-react";
+import { LayoutDashboard, Boxes, CalendarCheck, User } from "lucide-react";
 
 export default function Layout() {
   const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/inventory", label: "Inventory Management", icon: Boxes },
     { to: "/reservation", label: "Reservation", icon: CalendarCheck },
+    { to: "/user-management", label: "User Management", icon: User },
   ];
 
   return (

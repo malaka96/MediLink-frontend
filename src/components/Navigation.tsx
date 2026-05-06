@@ -31,6 +31,14 @@ export default function Navigation() {
                 Reservations
               </Link>
             </li>
+            <li>
+              <Link 
+                to="/user-management" 
+                className="hover:text-blue-200 transition-colors font-medium"
+              >
+                User Management
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

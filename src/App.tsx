@@ -4,6 +4,7 @@ import Layout from "./pages/Layout";
 import Dashboard from "./pages/Dashboard";
 import InventoryManagement from "./pages/InventoryManagement";
 import Reservations from "./pages/Reservations";
+import UserManagement from "./pages/UserManagement";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
           <Route path="dashboard" element={<Dashboard/>} />
           <Route path="inventory" element={<InventoryManagement/>} />
           <Route path="reservation" element={<Reservations/>} />
+          <Route path="user-management" element={<UserManagement/>} />
         </Route>
       </Routes>
     </BrowserRouter>
