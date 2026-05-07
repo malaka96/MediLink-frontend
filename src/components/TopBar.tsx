@@ -1,6 +1,30 @@
 import { Bell, LogOut, Package } from "lucide-react";
+import { useContext, useState } from "react";
+import { logout } from "../services/apis/AuthApi";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Topbar() {
+  const { setUser, setIsLoading } = useContext(AuthContext)!;
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+    setIsLoading(true);
+
+    try {
+      await logout();
+    } catch {
+      // ignore
+    } finally {
+      setUser(null);
+      setIsLoading(false);
+      setIsLoggingOut(false);
+      window.location.replace("/login");
+    }
+  };
+
   return (
     <div className="w-full bg-white px-3 sm:px-20 py-3 sm:py-3 flex items-center justify-between border-b-2 border-gray-200">
       
@@ -32,10 +56,15 @@ export default function Topbar() {
         </button>
 
         {/* Logout Button */}
-        <button className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-gray-100 transition">
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <LogOut className="w-5 h-5 text-gray-600" />
           <span className="text-xs sm:text-sm text-gray-700">
-            Logout
+            {isLoggingOut ? "Logging out..." : "Logout"}
           </span>
         </button>
 

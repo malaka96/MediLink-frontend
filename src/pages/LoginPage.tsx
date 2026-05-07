@@ -79,7 +79,7 @@ export default function LoginPage() {
 
     try {
       await login(loginEmail.trim(), loginPassword);
-      const meResponse = await API.get("/api/auth/me");
+      const meResponse = await API.get("/api/users/me");
       setUser(meResponse.data);
 
       setMessage({ type: "success", text: "Signed in successfully." });
