@@ -3,10 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   ArrowRight,
-  Building2,
   Lock,
   Mail,
-  MapPin,
   Phone,
   Shield,
   Store,
@@ -28,11 +26,10 @@ export default function LoginPage() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
-  const [pharmacyName, setPharmacyName] = useState("");
-  const [ownerName, setOwnerName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  const [registerPhone, setRegisterPhone] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -47,21 +44,19 @@ export default function LoginPage() {
 
   const canRegister = useMemo(() => {
     return (
-      pharmacyName.trim().length > 0 &&
-      ownerName.trim().length > 0 &&
+      firstName.trim().length > 0 &&
+      lastName.trim().length > 0 &&
       registerEmail.trim().length > 0 &&
-      phone.trim().length > 0 &&
-      address.trim().length > 0 &&
+      registerPhone.trim().length > 0 &&
       registerPassword.trim().length >= 6 &&
       confirmPassword.trim().length >= 6
     );
   }, [
-    address,
     confirmPassword,
-    ownerName,
-    pharmacyName,
-    phone,
+    firstName,
+    lastName,
     registerEmail,
+    registerPhone,
     registerPassword,
   ]);
 
@@ -118,19 +113,18 @@ export default function LoginPage() {
 
     // Hook up to real registration when backend is ready.
     // eslint-disable-next-line no-console
-    console.log("Register pharmacy:", {
-      pharmacyName,
-      ownerName,
+    console.log("Register user:", {
+      firstName,
+      lastName,
       email: registerEmail,
-      phone,
-      address,
+      phone: registerPhone,
     });
 
     setMessage({
       type: "success",
-      text: "Registration submitted. You can now sign in as Pharmacy.",
+      text: "Registration submitted. You can now sign in.",
     });
-    setLoginRole("pharmacy");
+    setLoginRole("admin");
     setLoginEmail(registerEmail);
     setLoginPassword("");
     setMode("login");
@@ -153,11 +147,11 @@ export default function LoginPage() {
 
           <div className="mt-6 space-y-4">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-              {mode === "login" ? "Welcome back" : "Register your pharmacy"}
+              {mode === "login" ? "Welcome back" : "Create your account"}
             </h1>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Admins and pharmacies can securely access the system here. Pharmacies
-              can also request an account by registering their details.
+              Admins and users can securely access the system here. Create an
+              account to get started.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
@@ -173,11 +167,11 @@ export default function LoginPage() {
 
               <div className="border border-gray-200 rounded-xl p-4">
                 <div className="flex items-center gap-2 text-gray-800 font-medium">
-                  <Building2 className="w-4 h-4 text-blue-600" />
-                  Pharmacy Portal
+                  <User className="w-4 h-4 text-blue-600" />
+                  User Portal
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Handle reservations and manage inventory efficiently.
+                  Access your dashboard and manage your work efficiently.
                 </p>
               </div>
             </div>
@@ -215,7 +209,7 @@ export default function LoginPage() {
                     : "px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-white border border-transparent hover:border-gray-200 transition"
                 }
               >
-                Pharmacy Register
+                Register
               </button>
             </div>
           </div>
@@ -288,24 +282,34 @@ export default function LoginPage() {
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
-                <p className="text-xs text-gray-500 text-center">
-                  Use pharmacy registration if you don&apos;t have an account yet.
-                </p>
+                <div className="text-center text-xs text-gray-600">
+                  Don&apos;t have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMessage(null);
+                      setMode("register");
+                    }}
+                    className="text-blue-600 hover:text-blue-700 font-medium underline underline-offset-2"
+                  >
+                    Create one
+                  </button>
+                </div>
               </form>
             ) : (
               <form onSubmit={onSubmitRegister} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-sm font-medium text-gray-700">
-                      Pharmacy Name
+                      First Name
                     </label>
                     <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
-                      <Store className="w-4 h-4 text-gray-400 shrink-0" />
+                      <User className="w-4 h-4 text-gray-400 shrink-0" />
                       <input
                         type="text"
-                        value={pharmacyName}
-                        onChange={(e) => setPharmacyName(e.target.value)}
-                        placeholder="CityCare Pharmacy"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="Kasun"
                         className="outline-none w-full text-sm min-w-0"
                       />
                     </div>
@@ -313,15 +317,15 @@ export default function LoginPage() {
 
                   <div>
                     <label className="text-sm font-medium text-gray-700">
-                      Owner / Manager
+                      Last Name
                     </label>
                     <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
                       <User className="w-4 h-4 text-gray-400 shrink-0" />
                       <input
                         type="text"
-                        value={ownerName}
-                        onChange={(e) => setOwnerName(e.target.value)}
-                        placeholder="Kasun Perera"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Perera"
                         className="outline-none w-full text-sm min-w-0"
                       />
                     </div>
@@ -336,43 +340,25 @@ export default function LoginPage() {
                       type="email"
                       value={registerEmail}
                       onChange={(e) => setRegisterEmail(e.target.value)}
-                      placeholder="admin@yourpharmacy.lk"
+                      placeholder="you@example.com"
                       className="outline-none w-full text-sm min-w-0"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">
-                      Phone
-                    </label>
-                    <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
-                      <Phone className="w-4 h-4 text-gray-400 shrink-0" />
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+94 77 123 4567"
-                        className="outline-none w-full text-sm min-w-0"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">
-                      Address
-                    </label>
-                    <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
-                      <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
-                      <input
-                        type="text"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        placeholder="Colombo 07"
-                        className="outline-none w-full text-sm min-w-0"
-                      />
-                    </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">
+                    Phone Number
+                  </label>
+                  <div className="mt-2 flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2">
+                    <Phone className="w-4 h-4 text-gray-400 shrink-0" />
+                    <input
+                      type="tel"
+                      value={registerPhone}
+                      onChange={(e) => setRegisterPhone(e.target.value)}
+                      placeholder="+94 77 123 4567"
+                      className="outline-none w-full text-sm min-w-0"
+                    />
                   </div>
                 </div>
 
@@ -415,13 +401,22 @@ export default function LoginPage() {
                   disabled={!canRegister}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  Submit Registration <ArrowRight className="w-4 h-4" />
+                  Create Account <ArrowRight className="w-4 h-4" />
                 </button>
 
-                <p className="text-xs text-gray-500 text-center">
-                  Registration is for pharmacies only. Admin accounts are managed
-                  by the system.
-                </p>
+                <div className="text-center text-xs text-gray-600">
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMessage(null);
+                      setMode("login");
+                    }}
+                    className="text-blue-600 hover:text-blue-700 font-medium underline underline-offset-2"
+                  >
+                    Sign in
+                  </button>
+                </div>
               </form>
             )}
           </div>
