@@ -6,6 +6,7 @@ import InventoryManagement from "./pages/InventoryManagement";
 import Reservations from "./pages/Reservations";
 import UserManagement from "./pages/UserManagement";
 import LoginPage from "./pages/LoginPage";
+import ProtectedRoute from "./ProtectedRoute";
 
 function AppFrame() {
   const location = useLocation();
@@ -16,8 +17,15 @@ function AppFrame() {
       {showChrome ? <Topbar /> : null}
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={<Layout/>}>
-          <Route index element={<Navigate to="dashboard" replace />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          {/* <Route index element={<Navigate to="dashboard" replace />} /> */}
 
           <Route path="dashboard" element={<Dashboard/>} />
           <Route path="inventory" element={<InventoryManagement/>} />
