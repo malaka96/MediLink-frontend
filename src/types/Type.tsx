@@ -3,5 +3,7 @@ export interface User {
   name: string;
   email: string;
   phone: string;
-  status: string | null; 
+  role: "ADMIN" | "USER" | "MODERATOR"; // restrict to known roles
+  status: string | null;                // can be null or a string like "active"
+  createdAt: string;                    // ISO date string from backend
 }

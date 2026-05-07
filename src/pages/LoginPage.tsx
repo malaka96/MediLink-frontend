@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   ArrowRight,
   Building2,
@@ -11,12 +12,17 @@ import {
   Store,
   User,
 } from "lucide-react";
+import { login } from "../services/apis/AuthApi";
+import API from "../services/apis/Api";
+import { AuthContext } from "../context/AuthContext";
 
 type LoginRole = "admin" | "pharmacy";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { setUser, setIsLoading } = useContext(AuthContext)!;
   const [mode, setMode] = useState<"login" | "register">("login");
+  const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
 
   const [loginRole, setLoginRole] = useState<LoginRole>("admin");
   const [loginEmail, setLoginEmail] = useState("");
@@ -59,7 +65,7 @@ export default function LoginPage() {
     registerPassword,
   ]);
 
-  const onSubmitLogin = (e: React.FormEvent) => {
+  const onSubmitLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
 
@@ -68,10 +74,29 @@ export default function LoginPage() {
       return;
     }
 
-    // Hook up to real auth when backend is ready.
-    // eslint-disable-next-line no-console
-    console.log("Login:", { role: loginRole, email: loginEmail });
-    navigate("/dashboard");
+    setIsSubmittingLogin(true);
+    setIsLoading(true);
+
+    try {
+      await login(loginEmail.trim(), loginPassword);
+      const meResponse = await API.get("/api/auth/me");
+      setUser(meResponse.data);
+
+      setMessage({ type: "success", text: "Signed in successfully." });
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      setUser(null);
+      const errorText = axios.isAxiosError(err)
+        ? (err.response?.data as { message?: string } | undefined)?.message ??
+          err.response?.statusText ??
+          "Login failed."
+        : "Login failed.";
+
+      setMessage({ type: "error", text: errorText });
+    } finally {
+      setIsSubmittingLogin(false);
+      setIsLoading(false);
+    }
   };
 
   const onSubmitRegister = (e: React.FormEvent) => {
@@ -256,10 +281,11 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
-                  disabled={!canLogin}
+                  disabled={!canLogin || isSubmittingLogin}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  Sign In <ArrowRight className="w-4 h-4" />
+                  {isSubmittingLogin ? "Signing In..." : "Sign In"}{" "}
+                  <ArrowRight className="w-4 h-4" />
                 </button>
 
                 <p className="text-xs text-gray-500 text-center">

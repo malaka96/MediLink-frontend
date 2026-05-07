@@ -13,7 +13,7 @@ const AuthContextProvider = ({children}: AuthContextProviderProp) => {
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() =>{
-        API.get("/user/details")
+        API.get("/api/auth/me")
         .then(res => {setUser(res.data);console.log("user is logged in auth context provider");})
         .catch(() => setUser(null))
         .finally(() => setIsLoading(false));
