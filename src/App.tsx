@@ -7,6 +7,7 @@ import Reservations from "./pages/Reservations";
 import UserManagement from "./pages/UserManagement";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./ProtectedRoute";
+import PharmacyManagement from "./pages/PharmacyManagement";
 
 function AppFrame() {
   const location = useLocation();
@@ -31,6 +32,7 @@ function AppFrame() {
           <Route path="inventory" element={<InventoryManagement/>} />
           <Route path="reservation" element={<Reservations/>} />
           <Route path="user-management" element={<UserManagement/>} />
+          <Route path="pharmacy-management" element={<PharmacyManagement/>}/>
         </Route>
       </Routes>
     </>

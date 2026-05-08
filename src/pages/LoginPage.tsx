@@ -10,7 +10,7 @@ import {
   Store,
   User,
 } from "lucide-react";
-import { login } from "../services/apis/AuthApi";
+import { login, register } from "../services/apis/AuthApi";
 import API from "../services/apis/Api";
 import { AuthContext } from "../context/AuthContext";
 
@@ -21,6 +21,7 @@ export default function LoginPage() {
   const { setUser, setIsLoading } = useContext(AuthContext)!;
   const [mode, setMode] = useState<"login" | "register">("login");
   const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
+  const [isSubmittingRegister, setIsSubmittingRegister] = useState(false);
 
   const [loginRole, setLoginRole] = useState<LoginRole>("admin");
   const [loginEmail, setLoginEmail] = useState("");
@@ -111,23 +112,49 @@ export default function LoginPage() {
       return;
     }
 
-    // Hook up to real registration when backend is ready.
-    // eslint-disable-next-line no-console
-    console.log("Register user:", {
-      firstName,
-      lastName,
-      email: registerEmail,
-      phone: registerPhone,
-    });
+    if (isSubmittingRegister) return;
 
-    setMessage({
-      type: "success",
-      text: "Registration submitted. You can now sign in.",
-    });
-    setLoginRole("admin");
-    setLoginEmail(registerEmail);
-    setLoginPassword("");
-    setMode("login");
+    setIsSubmittingRegister(true);
+
+    register({
+      name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+      email: registerEmail.trim(),
+      password: registerPassword,
+      phone: registerPhone.trim(),
+      roleId: 2,
+    })
+      .then(() => {
+        setMessage({
+          type: "success",
+          text: "Account created. Please sign in.",
+        });
+
+        setLoginRole("pharmacy");
+        setLoginEmail(registerEmail.trim());
+        setLoginPassword("");
+
+        setFirstName("");
+        setLastName("");
+        setRegisterEmail("");
+        setRegisterPhone("");
+        setRegisterPassword("");
+        setConfirmPassword("");
+
+        setMode("login");
+        navigate("/login", { replace: true });
+      })
+      .catch((err) => {
+        const errorText = axios.isAxiosError(err)
+          ? (err.response?.data as { message?: string } | undefined)?.message ??
+            err.response?.statusText ??
+            "Registration failed."
+          : "Registration failed.";
+
+        setMessage({ type: "error", text: errorText });
+      })
+      .finally(() => {
+        setIsSubmittingRegister(false);
+      });
   };
 
   return (
@@ -398,10 +425,11 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
-                  disabled={!canRegister}
+                  disabled={!canRegister || isSubmittingRegister}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  Create Account <ArrowRight className="w-4 h-4" />
+                  {isSubmittingRegister ? "Creating..." : "Create Account"}{" "}
+                  <ArrowRight className="w-4 h-4" />
                 </button>
 
                 <div className="text-center text-xs text-gray-600">
