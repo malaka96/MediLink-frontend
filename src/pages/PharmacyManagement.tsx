@@ -1,6 +1,6 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import axios from "axios";
-import { createPharmacy } from "../services/apis/PharmacyApi";
+import { createPharmacy, getUserPharmacy } from "../services/apis/PharmacyApi";
 
 type PharmacyDetails = {
   pharmacyId: number;
@@ -36,6 +36,7 @@ export default function PharmacyManagement() {
   const [pharmacyName, setPharmacyName] = useState("");
   const [branches, setBranches] = useState<PharmacyBranch[]>([]);
 
+  const [isLoadingPharmacy, setIsLoadingPharmacy] = useState(true);
   const [isSavingPharmacy, setIsSavingPharmacy] = useState(false);
   const [pharmacySaveError, setPharmacySaveError] = useState<string | null>(null);
 
@@ -58,9 +59,52 @@ export default function PharmacyManagement() {
     return true;
   }, [branchDraft, savedPharmacy]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadMyPharmacy() {
+      setPharmacySaveError(null);
+      setIsLoadingPharmacy(true);
+
+      try {
+        const data: unknown = await getUserPharmacy();
+        if (!isMounted) return;
+
+        const maybeObj = data as { pharmacyId?: number; id?: number; name?: string } | null;
+        const idFromApi = maybeObj?.pharmacyId ?? maybeObj?.id;
+
+        const loadedPharmacy: PharmacyDetails = {
+          pharmacyId: typeof idFromApi === "number" ? idFromApi : generatePharmacyId(),
+          name: maybeObj?.name ?? "",
+        };
+
+        setSavedPharmacy(loadedPharmacy);
+        if (loadedPharmacy.name) setPharmacyName(loadedPharmacy.name);
+      } catch (err) {
+        if (!isMounted) return;
+
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+          setSavedPharmacy(null);
+          return;
+        }
+
+        setPharmacySaveError("Failed to load your pharmacy. Please refresh and try again.");
+      } finally {
+        if (isMounted) setIsLoadingPharmacy(false);
+      }
+    }
+
+    loadMyPharmacy();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   async function handleSavePharmacy() {
     if (!canSavePharmacy) return;
     if (savedPharmacy) return;
+    if (isLoadingPharmacy) return;
     if (isSavingPharmacy) return;
 
     setPharmacySaveError(null);
@@ -139,7 +183,11 @@ export default function PharmacyManagement() {
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-gray-900">Pharmacy Details</h2>
-          {savedPharmacy ? (
+          {isLoadingPharmacy ? (
+            <span className="text-xs px-2 py-1 rounded-full bg-gray-50 text-gray-700 border border-gray-200">
+              Loading...
+            </span>
+          ) : savedPharmacy ? (
             <span className="text-xs px-2 py-1 rounded-full bg-green-50 text-green-700 border border-green-200">
               Saved (ID: {savedPharmacy.pharmacyId})
             </span>
@@ -159,20 +207,20 @@ export default function PharmacyManagement() {
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-gray-700">Pharmacy name</label>
-            <input
-              value={pharmacyName}
-              onChange={(e) => setPharmacyName(e.target.value)}
-              placeholder="e.g. MediLink Pharmacy"
-              disabled={!!savedPharmacy || isSavingPharmacy}
-              className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
-            />
+              <input
+                value={pharmacyName}
+                onChange={(e) => setPharmacyName(e.target.value)}
+                placeholder="e.g. MediLink Pharmacy"
+                disabled={isLoadingPharmacy || !!savedPharmacy || isSavingPharmacy}
+                className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
+              />
             <p className="text-xs text-gray-500 mt-1">Minimum 2 characters.</p>
           </div>
 
           <button
             type="button"
             onClick={handleSavePharmacy}
-            disabled={!canSavePharmacy || !!savedPharmacy || isSavingPharmacy}
+            disabled={isLoadingPharmacy || !canSavePharmacy || !!savedPharmacy || isSavingPharmacy}
             className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
           >
             {isSavingPharmacy ? "Saving..." : savedPharmacy ? "Saved" : "Save details"}
