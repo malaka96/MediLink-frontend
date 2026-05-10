@@ -23,6 +23,11 @@ export async function createPharmacyBranch(payload: CreatePharmacyBranchRequest)
   return response.data;
 }
 
+export async function getAllPharmacyBranches() {
+  const response = await API.get("/api/pharmacy-branches/my");
+  return response.data;
+}
+
 export async function getUserPharmacy() {
   const response = await API.get("/api/pharmacies/my");
   return response.data;

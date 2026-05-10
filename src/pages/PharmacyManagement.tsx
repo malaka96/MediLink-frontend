@@ -3,6 +3,7 @@ import axios from "axios";
 import {
   createPharmacy,
   createPharmacyBranch,
+  getAllPharmacyBranches,
   getUserPharmacy,
 } from "../services/apis/PharmacyApi";
 
@@ -12,6 +13,7 @@ type PharmacyDetails = {
 };
 
 type PharmacyBranch = {
+  id?: number;
   pharmacyId: number;
   name: string;
   address: string;
@@ -43,6 +45,9 @@ export default function PharmacyManagement() {
   const [isLoadingPharmacy, setIsLoadingPharmacy] = useState(true);
   const [isSavingPharmacy, setIsSavingPharmacy] = useState(false);
   const [pharmacySaveError, setPharmacySaveError] = useState<string | null>(null);
+
+  const [isLoadingBranches, setIsLoadingBranches] = useState(false);
+  const [branchesLoadError, setBranchesLoadError] = useState<string | null>(null);
 
   const [isSavingBranch, setIsSavingBranch] = useState(false);
   const [branchSaveError, setBranchSaveError] = useState<string | null>(null);
@@ -109,6 +114,49 @@ export default function PharmacyManagement() {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadBranches() {
+      setBranchesLoadError(null);
+      setIsLoadingBranches(true);
+
+      try {
+        const data: unknown = await getAllPharmacyBranches();
+        if (!isMounted) return;
+
+        const list = Array.isArray(data) ? (data as unknown[]) : [];
+        const normalized: PharmacyBranch[] = list
+          .map((item) => item as Partial<PharmacyBranch> | null)
+          .filter((item): item is Partial<PharmacyBranch> => !!item)
+          .map((item) => ({
+            id: typeof item.id === "number" ? item.id : undefined,
+            pharmacyId: typeof item.pharmacyId === "number" ? item.pharmacyId : 0,
+            name: typeof item.name === "string" ? item.name : "",
+            address: typeof item.address === "string" ? item.address : "",
+            latitude: typeof item.latitude === "number" ? item.latitude : 0,
+            longitude: typeof item.longitude === "number" ? item.longitude : 0,
+            contactNumber: typeof item.contactNumber === "string" ? item.contactNumber : "",
+          }))
+          .filter((item) => item.pharmacyId !== 0 && item.name && item.address);
+
+        setBranches(normalized);
+      } catch(e) {
+        console.error("Error loading branches:", e);
+        if (!isMounted) return;
+        setBranchesLoadError("Failed to load branches. Please refresh and try again.");
+      } finally {
+        if (isMounted) setIsLoadingBranches(false);
+      }
+    }
+
+    loadBranches();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   async function handleSavePharmacy() {
     if (!canSavePharmacy) return;
     if (savedPharmacy) return;
@@ -163,6 +211,7 @@ export default function PharmacyManagement() {
       const maybeObj = data as Partial<PharmacyBranch> | null;
 
       const savedBranch: PharmacyBranch = {
+        id: typeof maybeObj?.id === "number" ? maybeObj.id : undefined,
         pharmacyId: typeof maybeObj?.pharmacyId === "number" ? maybeObj.pharmacyId : newBranch.pharmacyId,
         name: typeof maybeObj?.name === "string" ? maybeObj.name : newBranch.name,
         address: typeof maybeObj?.address === "string" ? maybeObj.address : newBranch.address,
@@ -375,10 +424,18 @@ export default function PharmacyManagement() {
         <div className="mt-6">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-900">Saved branches</h3>
-            <span className="text-xs text-gray-600">{branches.length} total</span>
+            {isLoadingBranches ? (
+              <span className="text-xs text-gray-600">Loading...</span>
+            ) : (
+              <span className="text-xs text-gray-600">{branches.length} total</span>
+            )}
           </div>
 
-          {branches.length === 0 ? (
+          {branchesLoadError ? (
+            <div className="mt-3 text-sm text-red-700 border border-red-200 bg-red-50 rounded-xl p-4">
+              {branchesLoadError}
+            </div>
+          ) : branches.length === 0 ? (
             <div className="mt-3 text-sm text-gray-600 border border-dashed border-gray-300 rounded-xl p-4">
               No branches yet.
             </div>
@@ -386,7 +443,7 @@ export default function PharmacyManagement() {
             <div className="mt-3 space-y-3">
               {branches.map((b, index) => (
                 <div
-                  key={`${b.name}-${index}`}
+                  key={typeof b.id === "number" ? String(b.id) : `${b.name}-${index}`}
                   className="border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3"
                 >
                   <div className="min-w-0">
