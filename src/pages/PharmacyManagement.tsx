@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import axios from "axios";
-import { createPharmacy, getUserPharmacy } from "../services/apis/PharmacyApi";
+import {
+  createPharmacy,
+  createPharmacyBranch,
+  getUserPharmacy,
+} from "../services/apis/PharmacyApi";
 
 type PharmacyDetails = {
   pharmacyId: number;
@@ -40,6 +44,9 @@ export default function PharmacyManagement() {
   const [isSavingPharmacy, setIsSavingPharmacy] = useState(false);
   const [pharmacySaveError, setPharmacySaveError] = useState<string | null>(null);
 
+  const [isSavingBranch, setIsSavingBranch] = useState(false);
+  const [branchSaveError, setBranchSaveError] = useState<string | null>(null);
+
   const [branchDraft, setBranchDraft] = useState<Omit<PharmacyBranch, "pharmacyId">>({
     name: "",
     address: "",
@@ -51,13 +58,14 @@ export default function PharmacyManagement() {
   const canSavePharmacy = useMemo(() => pharmacyName.trim().length > 1, [pharmacyName]);
   const canAddBranch = useMemo(() => {
     if (!savedPharmacy) return false;
+    if (isSavingBranch) return false;
     if (!branchDraft.name.trim()) return false;
     if (!branchDraft.address.trim()) return false;
     if (!Number.isFinite(branchDraft.latitude)) return false;
     if (!Number.isFinite(branchDraft.longitude)) return false;
     if (!branchDraft.contactNumber.trim()) return false;
     return true;
-  }, [branchDraft, savedPharmacy]);
+  }, [branchDraft, isSavingBranch, savedPharmacy]);
 
   useEffect(() => {
     let isMounted = true;
@@ -132,10 +140,11 @@ export default function PharmacyManagement() {
     }
   }
 
-  function handleAddBranch(e: FormEvent<HTMLFormElement>) {
+  async function handleAddBranch(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!savedPharmacy) return;
     if (!canAddBranch) return;
+    if (isSavingBranch) return;
 
     const newBranch: PharmacyBranch = {
       pharmacyId: savedPharmacy.pharmacyId,
@@ -146,13 +155,40 @@ export default function PharmacyManagement() {
       contactNumber: branchDraft.contactNumber.trim(),
     };
 
-    setBranches((prev) => [newBranch, ...prev]);
-    setBranchDraft((prev) => ({
-      ...prev,
-      name: "",
-      address: "",
-      contactNumber: "",
-    }));
+    setBranchSaveError(null);
+    setIsSavingBranch(true);
+
+    try {
+      const data: unknown = await createPharmacyBranch(newBranch);
+      const maybeObj = data as Partial<PharmacyBranch> | null;
+
+      const savedBranch: PharmacyBranch = {
+        pharmacyId: typeof maybeObj?.pharmacyId === "number" ? maybeObj.pharmacyId : newBranch.pharmacyId,
+        name: typeof maybeObj?.name === "string" ? maybeObj.name : newBranch.name,
+        address: typeof maybeObj?.address === "string" ? maybeObj.address : newBranch.address,
+        latitude: typeof maybeObj?.latitude === "number" ? maybeObj.latitude : newBranch.latitude,
+        longitude: typeof maybeObj?.longitude === "number" ? maybeObj.longitude : newBranch.longitude,
+        contactNumber:
+          typeof maybeObj?.contactNumber === "string"
+            ? maybeObj.contactNumber
+            : newBranch.contactNumber,
+      };
+
+      setBranches((prev) => [savedBranch, ...prev]);
+      setBranchDraft((prev) => ({
+        ...prev,
+        name: "",
+        address: "",
+        contactNumber: "",
+      }));
+    } catch (err) {
+      setBranchSaveError("Failed to save branch. Please try again.");
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setBranchSaveError("Branch already exists.");
+      }
+    } finally {
+      setIsSavingBranch(false);
+    }
   }
 
   function handleUseSample() {
@@ -254,6 +290,12 @@ export default function PharmacyManagement() {
         </div>
 
         <form onSubmit={handleAddBranch} className="mt-4 space-y-4">
+          {branchSaveError ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {branchSaveError}
+            </div>
+          ) : null}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700">Branch name</label>
@@ -261,7 +303,7 @@ export default function PharmacyManagement() {
                 value={branchDraft.name}
                 onChange={(e) => setBranchDraft((p) => ({ ...p, name: e.target.value }))}
                 placeholder={SAMPLE_BRANCH.name}
-                disabled={!savedPharmacy}
+                disabled={!savedPharmacy || isSavingBranch}
                 className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
             </div>
@@ -272,7 +314,7 @@ export default function PharmacyManagement() {
                 value={branchDraft.contactNumber}
                 onChange={(e) => setBranchDraft((p) => ({ ...p, contactNumber: e.target.value }))}
                 placeholder={SAMPLE_BRANCH.contactNumber}
-                disabled={!savedPharmacy}
+                disabled={!savedPharmacy || isSavingBranch}
                 className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
             </div>
@@ -283,7 +325,7 @@ export default function PharmacyManagement() {
                 value={branchDraft.address}
                 onChange={(e) => setBranchDraft((p) => ({ ...p, address: e.target.value }))}
                 placeholder={SAMPLE_BRANCH.address}
-                disabled={!savedPharmacy}
+                disabled={!savedPharmacy || isSavingBranch}
                 className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
             </div>
@@ -298,7 +340,7 @@ export default function PharmacyManagement() {
                   setBranchDraft((p) => ({ ...p, latitude: e.target.valueAsNumber }))
                 }
                 placeholder={String(SAMPLE_BRANCH.latitude)}
-                disabled={!savedPharmacy}
+                disabled={!savedPharmacy || isSavingBranch}
                 className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
             </div>
@@ -313,7 +355,7 @@ export default function PharmacyManagement() {
                   setBranchDraft((p) => ({ ...p, longitude: e.target.valueAsNumber }))
                 }
                 placeholder={String(SAMPLE_BRANCH.longitude)}
-                disabled={!savedPharmacy}
+                disabled={!savedPharmacy || isSavingBranch}
                 className="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
               />
             </div>
@@ -325,7 +367,7 @@ export default function PharmacyManagement() {
               disabled={!canAddBranch}
               className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700"
             >
-              Add branch
+              {isSavingBranch ? "Saving..." : "Add branch"}
             </button>
           </div>
         </form>

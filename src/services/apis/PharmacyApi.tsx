@@ -9,7 +9,22 @@ export async function createPharmacy(payload: CreatePharmacyRequest) {
   return response.data;
 }
 
+export type CreatePharmacyBranchRequest = {
+  pharmacyId: number;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  contactNumber: string;
+};
+
+export async function createPharmacyBranch(payload: CreatePharmacyBranchRequest) {
+  const response = await API.post("/api/pharmacy-branches", payload);
+  return response.data;
+}
+
 export async function getUserPharmacy() {
   const response = await API.get("/api/pharmacies/my");
   return response.data;
 }
+
