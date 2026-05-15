@@ -1,9 +1,10 @@
 type Props = {
+  branch: { id?: number; name: string } | null;
   isOpen: boolean;
   onClose: () => void;
 };
 
-export default function AddMedicine({ isOpen, onClose }: Props) {
+export default function AddMedicine({ branch, isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
   return (
@@ -25,6 +26,11 @@ export default function AddMedicine({ isOpen, onClose }: Props) {
         {/* Form */}
         <div className="grid grid-cols-2 gap-3">
 
+          <input
+            className="border border-gray-300 p-2 rounded-lg col-span-2 bg-gray-50"
+            value={branch ? `Branch: ${branch.name}` : "Branch: (not selected)"}
+            readOnly
+          />
           <input className="border border-gray-300 p-2 rounded-lg col-span-2" placeholder="Medicine Name" />
           <input className="border border-gray-300 p-2 rounded-lg" placeholder="Category" />
           <input className="border border-gray-300 p-2 rounded-lg" placeholder="Batch" />

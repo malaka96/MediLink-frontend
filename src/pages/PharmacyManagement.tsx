@@ -3,23 +3,14 @@ import axios from "axios";
 import {
   createPharmacy,
   createPharmacyBranch,
-  getAllPharmacyBranches,
   getUserPharmacy,
 } from "../services/apis/PharmacyApi";
+import { useMyPharmacyBranches } from "../hooks/useMyPharmacyBranches";
+import type { PharmacyBranch } from "../types/pharmacy";
 
 type PharmacyDetails = {
   pharmacyId: number;
   name: string;
-};
-
-type PharmacyBranch = {
-  id?: number;
-  pharmacyId: number;
-  name: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  contactNumber: string;
 };
 
 function generatePharmacyId(): number {
@@ -40,14 +31,16 @@ const SAMPLE_BRANCH: PharmacyBranch = {
 export default function PharmacyManagement() {
   const [savedPharmacy, setSavedPharmacy] = useState<PharmacyDetails | null>(null);
   const [pharmacyName, setPharmacyName] = useState("");
-  const [branches, setBranches] = useState<PharmacyBranch[]>([]);
+  const {
+    branches,
+    setBranches,
+    isLoadingBranches,
+    branchesLoadError,
+  } = useMyPharmacyBranches();
 
   const [isLoadingPharmacy, setIsLoadingPharmacy] = useState(true);
   const [isSavingPharmacy, setIsSavingPharmacy] = useState(false);
   const [pharmacySaveError, setPharmacySaveError] = useState<string | null>(null);
-
-  const [isLoadingBranches, setIsLoadingBranches] = useState(false);
-  const [branchesLoadError, setBranchesLoadError] = useState<string | null>(null);
 
   const [isSavingBranch, setIsSavingBranch] = useState(false);
   const [branchSaveError, setBranchSaveError] = useState<string | null>(null);
@@ -108,49 +101,6 @@ export default function PharmacyManagement() {
     }
 
     loadMyPharmacy();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadBranches() {
-      setBranchesLoadError(null);
-      setIsLoadingBranches(true);
-
-      try {
-        const data: unknown = await getAllPharmacyBranches();
-        if (!isMounted) return;
-
-        const list = Array.isArray(data) ? (data as unknown[]) : [];
-        const normalized: PharmacyBranch[] = list
-          .map((item) => item as Partial<PharmacyBranch> | null)
-          .filter((item): item is Partial<PharmacyBranch> => !!item)
-          .map((item) => ({
-            id: typeof item.id === "number" ? item.id : undefined,
-            pharmacyId: typeof item.pharmacyId === "number" ? item.pharmacyId : 0,
-            name: typeof item.name === "string" ? item.name : "",
-            address: typeof item.address === "string" ? item.address : "",
-            latitude: typeof item.latitude === "number" ? item.latitude : 0,
-            longitude: typeof item.longitude === "number" ? item.longitude : 0,
-            contactNumber: typeof item.contactNumber === "string" ? item.contactNumber : "",
-          }))
-          .filter((item) => item.pharmacyId !== 0 && item.name && item.address);
-
-        setBranches(normalized);
-      } catch(e) {
-        console.error("Error loading branches:", e);
-        if (!isMounted) return;
-        setBranchesLoadError("Failed to load branches. Please refresh and try again.");
-      } finally {
-        if (isMounted) setIsLoadingBranches(false);
-      }
-    }
-
-    loadBranches();
 
     return () => {
       isMounted = false;
